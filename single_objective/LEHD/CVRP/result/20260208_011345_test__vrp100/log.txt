@@ -1,0 +1,6 @@
+[2026-02-07 23:13:48] test.py(131) : DEBUG_MODE: False
+[2026-02-07 23:13:48] test.py(132) : USE_CUDA: False, CUDA_DEVICE_NUM: 0
+[2026-02-07 23:13:48] test.py(133) : env_params{'mode': 'test', 'data_path': 'C:/Users/ACER/OneDrive/Desktop/VRP/models/NCO_code/single_objective/LEHD/CVRP/data/vrp100_test_lkh.txt', 'sub_path': False, 'RRC_budget': 10}
+[2026-02-07 23:13:48] test.py(133) : model_params{'mode': 'test', 'embedding_dim': 128, 'sqrt_embedding_dim': 11.313708498984761, 'decoder_layer_num': 6, 'qkv_dim': 16, 'head_num': 8, 'ff_hidden_dim': 512}
+[2026-02-07 23:13:48] test.py(133) : tester_params{'use_cuda': False, 'cuda_device_num': 0, 'test_episodes': 10000, 'test_batch_size': 10000}
+[2026-02-07 23:13:48] test.py(133) : logger_params{'log_file': {'desc': 'test__vrp100', 'filename': 'log.txt', 'filepath': 'C:\\Users\\ACER\\OneDrive\\Desktop\\VRP\\models\\NCO_code\\single_objective\\LEHD\\CVRP/result/20260208_011345_test__vrp100'}}
