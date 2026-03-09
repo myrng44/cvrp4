@@ -494,11 +494,11 @@ class VRPEnv:
         done = False
         return self.step_state, reward, reward_student, done
 
-    def step(self, selected, selected_student,selected_flag_teacher,selected_flag_student):
+    def step(self, selected, selected_student, selected_flag_teacher, selected_flag_student):
 
         self.selected_count += 1
 
-        gather_index = selected[:, None, None].expand((len(selected), 1, 4)) # shape [B,1,4]
+        gather_index = selected.long()[:, None, None].expand((len(selected), 1, 4)) # shape [B,1,4]
 
         # --------------------
 
@@ -883,3 +883,4 @@ class VRPEnv:
             assert False, 'e3: wrong capacity!'
 
         return
+
