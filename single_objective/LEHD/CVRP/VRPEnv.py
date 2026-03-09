@@ -670,7 +670,7 @@ class VRPEnv:
 
         return travel_distances
 
-    def destroy_solution(self, problem, complete_solution)
+    def destroy_solution(self, problem, complete_solution):
 
 
         self.problems, self.solution, first_node_index,length_of_subpath,double_solution = self.sampling_subpaths_repair(
