@@ -619,19 +619,19 @@ class VRPEnv:
 
         problem_size = problems.shape[1] - 1
 
-        order_gathering_index = order_node_.unsqueeze(2).expand(-1, problem_size, 2)
+        order_gathering_index = order_node_.long().unsqueeze(2).expand(-1, problem_size, 2)
         order_loc = problems.gather(dim=1, index=order_gathering_index)
 
-        roll_gathering_index = roll_node.unsqueeze(2).expand(-1, problem_size, 2)
+        roll_gathering_index = roll_node.long().unsqueeze(2).expand(-1, problem_size, 2)
         roll_loc = problems.gather(dim=1, index=roll_gathering_index)
 
-        flag_gathering_index = order_flag_.unsqueeze(2).expand(-1, problem_size, 2)
+        flag_gathering_index = order_flag_.long().unsqueeze(2).expand(-1, problem_size, 2)
         flag_loc = problems.gather(dim=1, index=flag_gathering_index)
 
         order_lengths = ((order_loc - flag_loc) ** 2)
 
         order_flag_[:,0]=0
-        flag_gathering_index = order_flag_.unsqueeze(2).expand(-1, problem_size, 2)
+        flag_gathering_index = order_flag_.long().unsqueeze(2).expand(-1, problem_size, 2)
         flag_loc = problems.gather(dim=1, index=flag_gathering_index)
 
         roll_lengths = ((roll_loc - flag_loc) ** 2)

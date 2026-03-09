@@ -200,7 +200,7 @@ class CVRP_Decoder(nn.Module):
         pomo_size = node_index_to_pick.size(1)
         embedding_dim = encoded_nodes.size(2)
 
-        gathering_index = node_index_to_pick[:, :, None].expand(batch_size, pomo_size, embedding_dim)
+        gathering_index = node_index_to_pick[:, :, None].long().expand(batch_size, pomo_size, embedding_dim)
 
         picked_nodes = encoded_nodes.gather(dim=1, index=gathering_index)
 
