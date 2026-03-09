@@ -46,7 +46,7 @@ class VRPModel(nn.Module):
             selected_flag_teacher = solution[:, current_step, 1]
 
             is_via_depot = selected_flag_teacher==1
-            selected_node_teacher_copy = selected_node_teacher-1
+            selected_node_teacher_copy = (selected_node_teacher-1).long()
             selected_node_teacher_copy[is_via_depot]+=split_line
             # print('selected_node_teacher after',selected_node_teacher)
             prob_select_node = probs[torch.arange(batch_size)[:, None], selected_node_teacher_copy[:, None]].reshape(batch_size, 1)  # shape: [B, 1]
