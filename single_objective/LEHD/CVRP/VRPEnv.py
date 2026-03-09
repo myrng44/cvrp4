@@ -154,7 +154,7 @@ class VRPEnv:
         end_with_depot[end_with_depot.le(-0.5)] = solution.shape[1] - 1
         end_with_depot[:,1] = torch.roll(end_with_depot[:,1],dims=0,shifts=-1)
         visit_depot_num = solution[:,:,1].sum(1)
-        min_length = torch.min(visit_depot_num)
+        min_length = torch.min(visit_depot_num).item()
 
         first_node_index = torch.randint(low=0, high=min_length, size=[1])[0]  # in [0,N)
 
@@ -193,7 +193,7 @@ class VRPEnv:
 
         # the first node of subpath: uniform sampling, from 0 to N
         # 1.1
-        length_of_subpath = torch.randint(low=4, high=problems_size + 1, size=[1])[0]  # in [4,V]
+        length_of_subpath = torch.randint(low=4, high=problems_size + 1, size=(1,)).item()        # in [4,V]
 
         solution = self.vrp_whole_and_solution_subrandom_inverse(solution)
         solution = self.vrp_whole_and_solution_subrandom_shift_V2inverse(solution)
