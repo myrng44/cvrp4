@@ -94,7 +94,7 @@ class VRPEnv:
         start_from_depot2 = solution[:, :, 1].nonzero()
         start_from_depot3 = solution[:, :, 1].roll(shifts=-1, dims=1).nonzero()
 
-        repeat_solutions_node = solution[:, :, 0].repeat_interleave(visit_depot_num, dim=0)
+        repeat_solutions_node = solution[:, :, 0].repeat_interleave(visit_depot_num.long(), dim=0)
         double_repeat_solution_node = repeat_solutions_node.repeat(1, 2)
 
         x1 = torch.arange(double_repeat_solution_node.shape[1])[None, :].repeat(len(repeat_solutions_node), 1) \
@@ -845,7 +845,7 @@ class VRPEnv:
         start_from_depot2 = solution[:, :, 1].nonzero()
         start_from_depot3 = solution[:, :, 1].roll(shifts=-1, dims=1).nonzero()
 
-        repeat_solutions_node = solution[:, :, 0].repeat_interleave(visit_depot_num, dim=0)
+        repeat_solutions_node = solution[:, :, 0].repeat_interleave(visit_depot_num.long(), dim=0)
         double_repeat_solution_node = repeat_solutions_node.repeat(1, 2)
 
         x1 = torch.arange(double_repeat_solution_node.shape[1])[None, :].repeat(len(repeat_solutions_node), 1) \
@@ -867,7 +867,7 @@ class VRPEnv:
         ########################----------
         ########################----------
 
-        demands = torch.repeat_interleave(demand, repeats=visit_depot_num, dim=0)
+        demands = torch.repeat_interleave(demand, repeats=visit_depot_num.long(), dim=0)
 
         index = torch.arange(sub_tours_padding.shape[0])[:, None].repeat(1, sub_tours_padding.shape[1])
         sub_tours_demands = demands[index, sub_tours_padding].sum(dim=1)
