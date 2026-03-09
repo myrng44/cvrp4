@@ -111,7 +111,10 @@ class VRPEnv:
 
         x5 = x1 * x4
 
-        sub_tours_padding = sub_tourss[x5].reshape(all_subtour_num, max_subtour_length)
+        sub_tours_padding = sub_tourss[x5].reshape(
+            int(all_subtour_num),
+            int(max_subtour_length)
+        )
 
         # 4.
         # For each row, a random number of [0,100] is generated, greater than 50 is positive and less than 50 is inverse
@@ -862,7 +865,10 @@ class VRPEnv:
 
         x5 = x1 * x4
 
-        sub_tours_padding = sub_tourss[x5].reshape(all_subtour_num, max_subtour_length)
+        sub_tours_padding = sub_tourss[x5].reshape(
+            int(all_subtour_num),
+            int(max_subtour_length)
+        )
 
         ########################----------
         ########################----------
