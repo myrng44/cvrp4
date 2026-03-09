@@ -154,9 +154,9 @@ class VRPEnv:
         end_with_depot[end_with_depot.le(-0.5)] = solution.shape[1] - 1
         end_with_depot[:,1] = torch.roll(end_with_depot[:,1],dims=0,shifts=-1)
         visit_depot_num = solution[:,:,1].sum(1)
-        min_length = torch.min(visit_depot_num).item()
+        min_length = int(torch.min(visit_depot_num).item())
 
-        first_node_index = torch.randint(low=0, high=min_length, size=[1])[0]  # in [0,N)
+        first_node_index = torch.randint(low=0, high=min_length, size=(1,)).item()
 
         temp_tri = np.triu(np.ones((len(visit_depot_num), len(visit_depot_num))), k=1)
         visit_depot_num_numpy = visit_depot_num.clone().cpu().numpy()
