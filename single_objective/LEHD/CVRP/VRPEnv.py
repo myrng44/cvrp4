@@ -264,7 +264,7 @@ class VRPEnv:
         temp_index_torch_2 = torch.from_numpy(temp_index_2).long().cuda()
 
         select_end_with_depot_node_index_2 = select_end_with_depot_node_index_2 + temp_index_torch_2
-        before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2]
+        before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2.long()]
 
         before_start_index = before_is_via_depot_index[:,1]
         x2 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) <start_index[:offset_index][:, None]
@@ -670,7 +670,7 @@ class VRPEnv:
 
         return travel_distances
 
-    def destroy_solution(self, problem, complete_solution):
+    def destroy_solution(self, problem, complete_solution)
 
 
         self.problems, self.solution, first_node_index,length_of_subpath,double_solution = self.sampling_subpaths_repair(
@@ -755,7 +755,7 @@ class VRPEnv:
         temp_index_torch_2 = torch.from_numpy(temp_index_2).long().cuda()
 
         select_end_with_depot_node_index_2 = select_end_with_depot_node_index_2 + temp_index_torch_2
-        before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2]
+        before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2.long()]
 
         before_start_index = before_is_via_depot_index[:, 1]
         x2 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) < start_index[:offset_index][:, None]
