@@ -270,7 +270,7 @@ class VRPEnv:
         x2 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) <start_index[:offset_index][:, None]
         x3 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) >=before_start_index[:, None]
         x4 = x2 * x3
-        double_solution_demand = problems[:offset_index,:,2][torch.arange(offset_index)[:,None].repeat(1,double_solution.shape[1]),double_solution[:offset_index,:,0] ]
+        double_solution_demand = problems[:offset_index,:,2][torch.arange(offset_index)[:,None].repeat(1,double_solution.shape[1]),double_solution[:offset_index,:,0].long() ]
         before_demand = double_solution_demand*x4
         self.satisfy_demand = before_demand.sum(1)
 
@@ -762,7 +762,7 @@ class VRPEnv:
         x3 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) >= before_start_index[:, None]
         x4 = x2 * x3
         double_solution_demand = problems[:offset_index, :, 2][
-            torch.arange(offset_index)[:, None].repeat(1, double_solution.shape[1]), double_solution[:offset_index, :, 0]]
+            torch.arange(offset_index)[:, None].repeat(1, double_solution.shape[1]), double_solution[:offset_index, :, 0].long()]
 
         before_demand = double_solution_demand * x4
 
