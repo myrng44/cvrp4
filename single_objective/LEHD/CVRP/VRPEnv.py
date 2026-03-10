@@ -210,10 +210,21 @@ class VRPEnv:
 
         # the first node of subpath: uniform sampling, from 0 to N
         # 1.1
-        length_of_subpath = torch.randint(low=4, high=problems_size + 1, size=(1,)).item()        # in [4,V]
+        length_of_subpath = torch.randint(low=4, high=problems_size + 1, size=(1,)).item()
 
         solution = self.vrp_whole_and_solution_subrandom_inverse(solution)
         solution = self.vrp_whole_and_solution_subrandom_shift_V2inverse(solution)
+
+        # Update batch_size after augmentation (solution shape may not change but guard against 0)
+        batch_size = solution.shape[0]
+        if batch_size == 0:
+            return problems, solution
+
+        # Guard: ensure visit_depot_num > 0 for all instances
+        visit_depot_num_check = torch.sum(solution[:, :, 1], dim=1)
+        if visit_depot_num_check.sum() == 0 or (visit_depot_num_check == 0).any():
+            return problems, solution
+
         # 1.3
         #  Find the points that start from deopt, and then subtract 1 to get the point that ends with depot
 
