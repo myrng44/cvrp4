@@ -73,6 +73,10 @@ class VRPEnv:
         visit_depot_num = torch.sum(solution[:, :, 1], dim=1)
         all_subtour_num = torch.sum(visit_depot_num)
 
+        # Guard: if no depot visits found, return solution unchanged
+        if all_subtour_num == 0:
+            return solution
+
         fake_solution = torch.cat((solution[:, :, 1], torch.ones(batch_size)[:, None]), dim=1)
 
         start_from_depot = fake_solution.nonzero()
@@ -82,6 +86,10 @@ class VRPEnv:
         start_from_depot_2 = torch.roll(start_from_depot_1, shifts=-1)
 
         sub_tours_length = start_from_depot_2 - start_from_depot_1
+
+        # Guard: if sub_tours_length is empty, return solution unchanged
+        if sub_tours_length.numel() == 0:
+            return solution
 
         max_subtour_length = torch.max(sub_tours_length)
 
@@ -154,7 +162,16 @@ class VRPEnv:
         end_with_depot[end_with_depot.le(-0.5)] = solution.shape[1] - 1
         end_with_depot[:,1] = torch.roll(end_with_depot[:,1],dims=0,shifts=-1)
         visit_depot_num = solution[:,:,1].sum(1)
+
+        # Guard: if no depot visits, return solution unchanged
+        if visit_depot_num.sum() == 0:
+            return solution
+
         min_length = int(torch.min(visit_depot_num).item())
+
+        # Guard: if min_length is 0, return solution unchanged
+        if min_length == 0:
+            return solution
 
         first_node_index = torch.randint(low=0, high=min_length, size=(1,)).item()
 
