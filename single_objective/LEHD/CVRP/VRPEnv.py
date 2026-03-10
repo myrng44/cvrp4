@@ -478,10 +478,12 @@ class VRPEnv:
     def reset(self, mode, sample_size = 1):
         self.selected_count = 0
 
-        self.selected_node_list = torch.zeros((self.batch_size, 0), dtype=torch.long)
-        self.selected_teacher_flag = torch.zeros((self.batch_size, 0), dtype=torch.long)
-        self.selected_student_list = torch.zeros((self.batch_size, 0), dtype=torch.long)
-        self.selected_student_flag= torch.zeros((self.batch_size, 0), dtype=torch.long)
+        actual_batch_size = self.problems.shape[0]
+
+        self.selected_node_list = torch.zeros((actual_batch_size, 0), dtype=torch.long)
+        self.selected_teacher_flag = torch.zeros((actual_batch_size, 0), dtype=torch.long)
+        self.selected_student_list = torch.zeros((actual_batch_size, 0), dtype=torch.long)
+        self.selected_student_flag = torch.zeros((actual_batch_size, 0), dtype=torch.long)
         self.step_state = Step_State(problems=self.problems)
 
         reward = None
