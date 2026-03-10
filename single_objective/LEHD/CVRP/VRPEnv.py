@@ -200,34 +200,48 @@ class VRPEnv:
         # problems shape (B,V+1,4)
         # solution shape (B,V,2)
 
-        # step：
-        # 1.Extract subtour
-
         problems_size = problems.shape[1] - 1
-
         batch_size = problems.shape[0]
         embedding_size = problems.shape[2]
 
-        # the first node of subpath: uniform sampling, from 0 to N
-        # 1.1
+        # Pre-filter: remove instances with no depot visits
+        visit_depot_pre = torch.sum(solution[:, :, 1], dim=1)
+        valid_pre = visit_depot_pre > 0
+        if valid_pre.sum() == 0:
+            # Fallback: return first 4 nodes as subpath
+            sub_sol = solution[:, :4, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:5, :]), dim=1)
+            return new_data, sub_sol
+        if valid_pre.sum() < batch_size:
+            problems = problems[valid_pre]
+            solution = solution[valid_pre]
+            batch_size = problems.shape[0]
+            problems_size = problems.shape[1] - 1
+
         length_of_subpath = torch.randint(low=4, high=problems_size + 1, size=(1,)).item()
 
         solution = self.vrp_whole_and_solution_subrandom_inverse(solution)
         solution = self.vrp_whole_and_solution_subrandom_shift_V2inverse(solution)
 
-        # Update batch_size after augmentation (solution shape may not change but guard against 0)
+        # Post-augment filter
         batch_size = solution.shape[0]
         if batch_size == 0:
-            return problems, solution
+            sub_sol = solution[:, :4, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:5, :]), dim=1)
+            return new_data, sub_sol
 
-        # Guard: ensure visit_depot_num > 0 for all instances
-        visit_depot_num_check = torch.sum(solution[:, :, 1], dim=1)
-        if visit_depot_num_check.sum() == 0 or (visit_depot_num_check == 0).any():
-            return problems, solution
+        visit_depot_post = torch.sum(solution[:, :, 1], dim=1)
+        valid_post = visit_depot_post > 0
+        if valid_post.sum() == 0:
+            sub_sol = solution[:, :4, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:5, :]), dim=1)
+            return new_data, sub_sol
+        if valid_post.sum() < batch_size:
+            problems = problems[valid_post]
+            solution = solution[valid_post]
+            batch_size = solution.shape[0]
 
-        # 1.3
-        #  Find the points that start from deopt, and then subtract 1 to get the point that ends with depot
-
+        # 1.3 Find the points that start from depot, subtract 1 to get end_with_depot
         start_from_depot = solution[:, :, 1].nonzero()
 
         end_with_depot = start_from_depot
@@ -248,7 +262,6 @@ class VRPEnv:
         temp_index_torch = torch.from_numpy(temp_index).long().cuda()
         select_end_with_depot_node_index_ = select_end_with_depot_node_index + temp_index_torch
 
-        # This is the point at which each instance is randomly selected with an end with depot
         select_end_with_depot_node = end_with_depot[select_end_with_depot_node_index_, 1]
 
         # 1.5
@@ -270,14 +283,11 @@ class VRPEnv:
         index_3 = index_1 + index_2
         sub_solution = sub_tour[index_3, :, :]
 
-        # Calculate the capacity of the first point
-
         offset_index = problems.shape[0]
         start_index = indexxxx[:,0]
 
         x1 = torch.arange(double_solution[:offset_index,:,1].shape[1])<=start_index[:offset_index][:,None]
 
-        start_capacity = 0
         before_is_via_depot_all = double_solution[:offset_index,:,1]*x1
         before_is_via_depot = before_is_via_depot_all.nonzero()
 
@@ -298,29 +308,24 @@ class VRPEnv:
         x2 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) <start_index[:offset_index][:, None]
         x3 = torch.arange(double_solution[:offset_index, :, 1].shape[1]) >=before_start_index[:, None]
         x4 = x2 * x3
-        double_solution_demand = problems[:offset_index,:,2][torch.arange(offset_index)[:,None].repeat(1,double_solution.shape[1]),double_solution[:offset_index,:,0].long() ]
+        double_solution_demand = problems[:offset_index,:,2][torch.arange(offset_index)[:,None].repeat(1,double_solution.shape[1]),double_solution[:offset_index,:,0].long()]
         before_demand = double_solution_demand*x4
         self.satisfy_demand = before_demand.sum(1)
 
         problems[:offset_index,:,3] = problems[:offset_index,:,3] - self.satisfy_demand[:,None]
-        # -----------------------------
-        # 2. Update the subtour's index
-        # -----------------------------
 
         # 2.1
         sub_solution_node = sub_solution[:, :, 0]
-
-        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)  # 升序
-        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)  # 升序
+        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)
+        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)
         sub_solution[:, :, 0] = new_sulution_rank+1
 
         # 2.2
-
         index_2, _ = torch.cat((new_sulution_ascending, new_sulution_ascending, new_sulution_ascending, new_sulution_ascending), dim=1). \
             type(torch.long).sort(dim=-1, descending=False)
 
-        index_1 = torch.arange(batch_size, dtype=torch.long)[:, None].expand(batch_size, index_2.shape[1])  # shape: [B, 2current_step]
-        temp = torch.arange((embedding_size), dtype=torch.long)[None, :].expand(batch_size, embedding_size)  # shape: [B, current_step]
+        index_1 = torch.arange(batch_size, dtype=torch.long)[:, None].expand(batch_size, index_2.shape[1])
+        temp = torch.arange((embedding_size), dtype=torch.long)[None, :].expand(batch_size, embedding_size)
         index_3 = temp.repeat([1, length_of_subpath])
 
         new_data = problems[index_1, index_2, index_3].view(batch_size, length_of_subpath, embedding_size)
