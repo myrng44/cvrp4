@@ -1,4 +1,3 @@
-
 from logging import getLogger
 
 import torch
@@ -164,6 +163,10 @@ class VRPTrainer:
         self.model.train() # train状态
 
         self.env.load_problems(episode,batch_size) # 重新生成 problems
+
+        # If sampling_subpaths filtered out all instances, skip this batch
+        if self.env.problems.shape[0] == 0:
+            return 0, 0, 0.0
 
         reset_state, _, _ = self.env.reset(self.env_params['mode'])
 

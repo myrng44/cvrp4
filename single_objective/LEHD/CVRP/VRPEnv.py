@@ -291,6 +291,13 @@ class VRPEnv:
         before_is_via_depot_all = double_solution[:offset_index,:,1]*x1
         before_is_via_depot = before_is_via_depot_all.nonzero()
 
+        # Guard: if no depot visits found before the subpath start, fall back gracefully
+        if before_is_via_depot.shape[0] == 0:
+            sub_sol = sub_solution[:, :, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:length_of_subpath + 1, :]), dim=1)
+            self.satisfy_demand = torch.zeros(batch_size)
+            return new_data, sub_sol
+
         visit_depot_num_2 = torch.sum(before_is_via_depot_all, dim=1)
 
         select_end_with_depot_node_index_2 = visit_depot_num_2-1
@@ -778,6 +785,13 @@ class VRPEnv:
         start_capacity = 0
         before_is_via_depot_all = double_solution[:offset_index, :, 1] * x1
         before_is_via_depot = before_is_via_depot_all.nonzero()
+
+        # Guard: if no depot visits found before the subpath start, fall back gracefully
+        if before_is_via_depot.shape[0] == 0:
+            sub_sol = sub_solution[:, :, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:length_of_subpath + 1, :]), dim=1)
+            self.satisfy_demand = torch.zeros(batch_size)
+            return new_data, sub_sol
 
         visit_depot_num_2 = torch.sum(before_is_via_depot_all, dim=1)
 
