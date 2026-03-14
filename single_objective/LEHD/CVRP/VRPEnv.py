@@ -179,7 +179,7 @@ class VRPEnv:
         visit_depot_num_numpy = visit_depot_num.clone().cpu().numpy()
 
         temp_index = np.dot(visit_depot_num_numpy, temp_tri)
-        temp_index_torch = torch.from_numpy(temp_index).long().cuda()
+        temp_index_torch = torch.from_numpy(temp_index).long().to(solution.device)
 
         pick_end_with_depot_index = temp_index_torch + first_node_index
         pick_end_with_depot_ = end_with_depot[pick_end_with_depot_index][:,1]
@@ -259,7 +259,7 @@ class VRPEnv:
         visit_depot_num_numpy = visit_depot_num.clone().cpu().numpy()
 
         temp_index = np.dot(visit_depot_num_numpy, temp_tri)
-        temp_index_torch = torch.from_numpy(temp_index).long().cuda()
+        temp_index_torch = torch.from_numpy(temp_index).long().to(solution.device)
         select_end_with_depot_node_index_ = select_end_with_depot_node_index + temp_index_torch
 
         select_end_with_depot_node = end_with_depot[select_end_with_depot_node_index_, 1]
@@ -300,13 +300,32 @@ class VRPEnv:
 
         visit_depot_num_2 = torch.sum(before_is_via_depot_all, dim=1)
 
+        # Filter out instances where no depot visit was found before the subpath start
+        valid_depot_2 = visit_depot_num_2 > 0
+        if valid_depot_2.sum() == 0:
+            sub_sol = sub_solution[:, :, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:length_of_subpath + 1, :]), dim=1)
+            self.satisfy_demand = torch.zeros(batch_size)
+            return new_data, sub_sol
+        if valid_depot_2.sum() < batch_size:
+            problems = problems[valid_depot_2]
+            solution = solution[valid_depot_2]
+            sub_solution = sub_solution[valid_depot_2]
+            before_is_via_depot_all = before_is_via_depot_all[valid_depot_2]
+            before_is_via_depot = before_is_via_depot_all.nonzero()
+            start_index = start_index[valid_depot_2]
+            double_solution = double_solution[valid_depot_2]
+            batch_size = problems.shape[0]
+            offset_index = batch_size
+            visit_depot_num_2 = visit_depot_num_2[valid_depot_2]
+
         select_end_with_depot_node_index_2 = visit_depot_num_2-1
 
         temp_tri_2 = np.triu(np.ones((len(visit_depot_num_2), len(visit_depot_num_2))), k=1)
         visit_depot_num_numpy_2 = visit_depot_num_2.clone().cpu().numpy()
 
         temp_index_2 = np.dot(visit_depot_num_numpy_2, temp_tri_2)
-        temp_index_torch_2 = torch.from_numpy(temp_index_2).long().cuda()
+        temp_index_torch_2 = torch.from_numpy(temp_index_2).long().to(solution.device)
 
         select_end_with_depot_node_index_2 = select_end_with_depot_node_index_2 + temp_index_torch_2
         before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2.long()]
@@ -755,7 +774,7 @@ class VRPEnv:
         visit_depot_num_numpy = visit_depot_num.clone().cpu().numpy()
 
         temp_index = np.dot(visit_depot_num_numpy, temp_tri)
-        temp_index_torch = torch.from_numpy(temp_index).long().cuda()
+        temp_index_torch = torch.from_numpy(temp_index).long().to(solution.device)
 
         select_end_with_depot_node_index_ = select_end_with_depot_node_index + temp_index_torch
 
@@ -795,13 +814,32 @@ class VRPEnv:
 
         visit_depot_num_2 = torch.sum(before_is_via_depot_all, dim=1)
 
+        # Filter out instances where no depot visit was found before the subpath start
+        valid_depot_2 = visit_depot_num_2 > 0
+        if valid_depot_2.sum() == 0:
+            sub_sol = sub_solution[:, :, :]
+            new_data = torch.cat((problems[:, 0:1, :], problems[:, 1:length_of_subpath + 1, :]), dim=1)
+            self.satisfy_demand = torch.zeros(batch_size)
+            return new_data, sub_sol
+        if valid_depot_2.sum() < batch_size:
+            problems = problems[valid_depot_2]
+            solution = solution[valid_depot_2]
+            sub_solution = sub_solution[valid_depot_2]
+            before_is_via_depot_all = before_is_via_depot_all[valid_depot_2]
+            before_is_via_depot = before_is_via_depot_all.nonzero()
+            start_index = start_index[valid_depot_2]
+            double_solution = double_solution[valid_depot_2]
+            batch_size = problems.shape[0]
+            offset_index = batch_size
+            visit_depot_num_2 = visit_depot_num_2[valid_depot_2]
+
         select_end_with_depot_node_index_2 = visit_depot_num_2 - 1
 
         temp_tri_2 = np.triu(np.ones((len(visit_depot_num_2), len(visit_depot_num_2))), k=1)
         visit_depot_num_numpy_2 = visit_depot_num_2.clone().cpu().numpy()
 
         temp_index_2 = np.dot(visit_depot_num_numpy_2, temp_tri_2)
-        temp_index_torch_2 = torch.from_numpy(temp_index_2).long().cuda()
+        temp_index_torch_2 = torch.from_numpy(temp_index_2).long().to(solution.device)
 
         select_end_with_depot_node_index_2 = select_end_with_depot_node_index_2 + temp_index_torch_2
         before_is_via_depot_index = before_is_via_depot[select_end_with_depot_node_index_2.long()]

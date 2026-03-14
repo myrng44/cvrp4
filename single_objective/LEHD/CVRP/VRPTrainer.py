@@ -185,7 +185,7 @@ class VRPTrainer:
                 selected_flag_teacher = self.env.solution[:, 0, 1]
                 selected_student = selected_teacher
                 selected_flag_student = selected_flag_teacher
-                loss_mean = torch.tensor(0)
+                loss_mean = torch.tensor(0.0)
 
             else:
 
@@ -203,8 +203,8 @@ class VRPTrainer:
             current_step+=1
             state, reward, reward_student, done = self.env.step(selected_teacher, selected_student,selected_flag_teacher,selected_flag_student)  # 更新 selected_teacher list 和 mask
 
-            loss_list.append(loss_mean)
+            loss_list.append(loss_mean.detach())
 
-        loss_mean = torch.tensor(loss_list).mean()
+        loss_mean = torch.stack(loss_list).mean()
 
         return 0,0, loss_mean.item()
