@@ -580,8 +580,8 @@ class VRPEnv:
             names.append(line[name_index+1][1:-1])
 
         # Each row of data represents an instance, and the size of each instance is different
-        node_coords = np.array(node_coords)
-        demands = np.array(demands)
+        node_coords = np.array(node_coords, dtype=object)
+        demands = np.array(demands, dtype=object)
         capacitys = np.array(capacitys)
         costs = np.array(costs)
         names = np.array(names)

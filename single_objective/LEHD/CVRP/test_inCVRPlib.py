@@ -26,12 +26,12 @@ RRC_budget = 1000         # RRC budget
 
 ########### model ###############
 
-model_load_path = 'result/20230817_235537_train'
+model_load_path = 'result/20260321_174809_train'
 model_load_epoch = 40
 
 
 if test_in_vrplib == True:
-    problem_size = 0
+    problem_size = 0    
 
 if not Use_RRC:
     RRC_budget = 0
