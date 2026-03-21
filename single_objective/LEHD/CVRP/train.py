@@ -16,7 +16,7 @@ from LEHD.CVRP.VRPTrainer import VRPTrainer as Trainer
 # parameters
 b = os.path.abspath(".").replace('\\', '/')
 
-training_data_path = b + '/data/vrp1000_test_lkh.txt'
+training_data_path = b + '/data/vrp500_test_lkh.txt'
 
 env_params = {
     'data_path' : training_data_path,
