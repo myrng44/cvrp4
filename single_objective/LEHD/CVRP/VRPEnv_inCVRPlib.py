@@ -1048,4 +1048,5 @@ class VRPEnv:
             assert False, 'e3: wrong capacity!'
 
         return
-#end
+#end#   t e s t i n g   p u s h   f r o m   c o p i l o t  
+ 
