@@ -1,4 +1,4 @@
-import os
+﻿import os
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
@@ -195,7 +195,7 @@ class VRPEnv:
 
         # 1.
         # find the number of subtours in each instance.
-        # the total number of subpaths in all instances:     all_subtour_num，
+        # the total number of subpaths in all instances:     all_subtour_numï¼Œ
         # The longest length in a subpath among all instances:  max_subtour_length
         batch_size = solution.shape[0]
         problem_size = solution.shape[1]
@@ -215,7 +215,7 @@ class VRPEnv:
 
         max_subtour_length = torch.max(sub_tours_length)
 
-        # 2。
+        # 2ã€‚
         # For each subpath, take it out separately, pandding 0 to length max_subtour_length
         #For each instance, padding 0 to max_subtour_num number of subpaths
         # 3.
@@ -255,7 +255,7 @@ class VRPEnv:
 
         sub_tours_padding[clockwise_or_not_bool] = torch.flip(sub_tours_padding[clockwise_or_not_bool], dims=[1])
 
-        # 6。
+        # 6ã€‚
         # Map the subtours to the original solution matrix dimension
         sub_tourss_back = sub_tourss
 
@@ -310,7 +310,7 @@ class VRPEnv:
         # problems shape (B,V+1,4)
         # solution shape (B,V,2)
 
-        # step：
+        # stepï¼š
         # 1.Extract subtour
 
         problems_size = problems.shape[1] - 1
@@ -409,8 +409,8 @@ class VRPEnv:
         # 2.1
         sub_solution_node = sub_solution[:, :, 0]
 
-        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)  # 升序
-        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)  # 升序
+        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)  # å‡åº
+        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)  # å‡åº
         sub_solution[:, :, 0] = new_sulution_rank+1
 
         # 2.2
@@ -811,7 +811,7 @@ class VRPEnv:
 
         travel_distances_student = self.cal_length(problems, order_node, order_flag)
 
-        # draw figure， validate the result.
+        # draw figureï¼Œ validate the result.
         # self.drawPic_VRP(problems[0,:,:], order_node[0],order_flag[0],name='student')
 
         return -travel_distances, -travel_distances_student
@@ -849,7 +849,7 @@ class VRPEnv:
 
     def sampling_subpaths_repair(self, problems, solution, length_fix=False, mode='test', repair=True):
         # problems shape (B,V+1,4)
-        # solution shape (B,V,2) index从1开始
+        # solution shape (B,V,2) indexä»Ž1å¼€å§‹
 
         problems_size = problems.shape[1] - 1
         # print('problems_size',problems_size)
@@ -940,8 +940,8 @@ class VRPEnv:
         # -----------------------------
         # 2.1
         sub_solution_node = sub_solution[:, :, 0]
-        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)  # 升序
-        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)  # 升序
+        new_sulution_ascending, rank = torch.sort(sub_solution_node, dim=-1, descending=False)  # å‡åº
+        _, new_sulution_rank = torch.sort(rank, dim=-1, descending=False)  # å‡åº
         sub_solution[:, :, 0] = new_sulution_rank + 1
         # 2.2
         index_2, _ = torch.cat((new_sulution_ascending, new_sulution_ascending, new_sulution_ascending, new_sulution_ascending), dim=1). \
@@ -1010,7 +1010,7 @@ class VRPEnv:
 
         max_subtour_length = torch.max(sub_tours_length)
 
-        # 2。
+        # 2ã€‚
 
 
         start_from_depot2 = solution[:, :, 1].nonzero()
@@ -1048,5 +1048,4 @@ class VRPEnv:
             assert False, 'e3: wrong capacity!'
 
         return
-#end#   t e s t i n g   p u s h   f r o m   c o p i l o t  
- 
+#end# testing push from copilot
