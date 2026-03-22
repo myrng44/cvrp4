@@ -64,6 +64,67 @@ class VRPEnv:
 
         # shape: (batch, pomo, 0~problem)
 
+    def make_dir(self,path_destination):
+        isExists = os.path.exists(path_destination)
+        if not isExists:
+            os.makedirs(path_destination)
+        return
+
+    def drawPic_VRP(self, coor_, order_node_,order_flag_,name='xx',):
+        # coor: shape (V,2)
+        # order_node_: shape (V)
+        # order_flag_: shape (V)
+
+        coor = coor_.clone().cpu().numpy()
+        order_node =  order_node_.clone().cpu().numpy()
+        order_flag = order_flag_.clone().cpu().numpy()
+
+        tour = []
+        for i in range(len(order_node)):
+            if order_flag[i]==1:
+                tour.append(0)
+                tour.append(order_node[i])
+            if order_flag[i]==0:
+                tour.append(order_node[i])
+
+
+        arr_max = np.max(coor)
+        arr_min = np.min(coor)
+        arr = (coor - arr_min) / (arr_max - arr_min)
+
+        fig, ax = plt.subplots(figsize=(20, 20))
+
+        plt.xlim(0, 1)
+        plt.ylim(0, 1)
+
+        plt.axis('off')
+        plt.scatter(arr[0, 0], arr[0, 1], color='red', linewidth=15,marker='v')
+
+        col_counter = order_flag.sum()
+        colors = plt.cm.turbo(np.linspace(0, 1, col_counter)) # turbo
+        np.random.seed(123)
+        np.random.shuffle(colors)
+
+        count = -1
+        for i in range(len(tour) - 1):
+            if tour[i]==0:
+                count+=1
+
+            tour = np.array(tour, dtype=int)
+
+            start = [arr[tour[i], 0], arr[tour[i + 1], 0]]
+            end = [arr[tour[i], 1], arr[tour[i + 1], 1]]
+            plt.plot(start, end, color=colors[count], linewidth=3)  # ,linestyle ="dashed"
+
+            plt.scatter(arr[tour[i], 0], arr[tour[i], 1], color='gray', linewidth=2)
+            plt.scatter(arr[tour[i+1], 0], arr[tour[i+1], 1], color='gray', linewidth=2)
+
+        b = os.path.abspath(".")
+        path = b+'/figure'
+        self.make_dir(path)
+        plt.savefig(path+f'/{name}.pdf',bbox_inches='tight', pad_inches=0)
+        # plt.show()
+
     def load_problems(self, episode, batch_size, ):
         self.episode = episode
         self.batch_size = batch_size
