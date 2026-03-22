@@ -28,7 +28,7 @@ Use_RRC = True
 RRC_budget = 10
 
 ########### model ###############
-model_load_path = 'result/20260321_174809_train'
+model_load_path = 'result/20260322_032817_train'
 model_load_epoch = 40
 
 if not Use_RRC:
