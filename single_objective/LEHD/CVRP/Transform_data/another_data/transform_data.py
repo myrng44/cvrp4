@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-def transform(input_file, output_file, filo_cost=0.0):
+def transform(input_file, output_file, filo_sol_file=None):
     with open(input_file, 'r') as f:
         lines = f.readlines()
         
@@ -100,18 +100,34 @@ def transform(input_file, output_file, filo_cost=0.0):
         
     # cost (scaled optimal from filo)
     out_parts.append('cost')
-    if filo_cost > 0.0:
-        normalized_opt_cost = filo_cost / scale
-        out_parts.append(str(normalized_opt_cost))
-    else:
-        out_parts.append('0.0')
+    out_parts.append('0.0') # Dummy cost since LEHD bypasses it and re-calculates via node_flags
         
-    # node_flag (dummy)
+    # Read FILO solution if provided
+    node_seq = []
+    flag_seq = []
+    if filo_sol_file:
+        try:
+            with open(filo_sol_file, 'r', encoding='utf-8') as fsol:
+                for sol_line in fsol:
+                    if sol_line.startswith('Route #'):
+                        r_nodes = [int(x) for x in sol_line.split(':')[1].split()]
+                        node_seq.extend(r_nodes)
+                        flag_seq.append(1)
+                        flag_seq.extend([0] * (len(r_nodes) - 1))
+            print(f"Loaded FILO solution: {len(node_seq)} total nodes routed.")
+        except Exception as e:
+            print(f"Warning: Could not read sol file correctly. Error: {e}")
+            
+    if len(node_seq) != len(customers):
+        print(f"Fallback to dummy node_flag (mismatch/none). Expected {len(customers)}, got {len(node_seq)}")
+        node_seq = list(range(1, len(customers) + 1))
+        flag_seq = [1] + [0] * (len(customers) - 1)
+        
     out_parts.append('node_flag')
-    for i in range(1, len(customers) + 1):
-        out_parts.append(str(i))
-    for _ in range(len(customers)):
-        out_parts.append('0')
+    for n in node_seq:
+        out_parts.append(str(n))
+    for f in flag_seq:
+        out_parts.append(str(f))
         
     with open(output_file, 'w') as f:
         f.write(','.join(out_parts) + '\n')
@@ -121,5 +137,6 @@ def transform(input_file, output_file, filo_cost=0.0):
 if __name__ == '__main__':
     input_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1.txt'
     output_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1_lkh.txt'
-    # Thay kết quả chi phí tối ưu bạn chạy được từ Filo vào biến filo_cost
-    transform(input_f, output_f, filo_cost=479705.0)
+    sol_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\result\filo2\Antwerp1.txt_seed-0.vrp.sol'
+    # Trích xuất dữ liệu route từ Filo .sol và ghi vào Antwerp1_lkh.txt
+    transform(input_f, output_f, filo_sol_file=sol_f)
