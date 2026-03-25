@@ -25,7 +25,7 @@ problem_size = 6000
 Use_RRC = True
 
 # RRC budget
-RRC_budget = 15 #10
+RRC_budget = 10 #10
 
 ########### model ###############
 model_load_path = 'result/20260322_032817_train'
@@ -41,7 +41,7 @@ test_paras = {
     200: ['vrp200_test_lkh.txt', 128, 128],
     500: ['vrp500_test_lkh.txt', 128, 128],
     1000: ['vrp1000_test_lkh.txt', 128, 128],
-    6000: ['Antwerp1_lkh.txt', 128, 128]
+    6000: ['Antwerp1_lkh.txt', 1, 1]
 }
 
 

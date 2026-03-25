@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-def transform(input_file, output_file):
+def transform(input_file, output_file, filo_cost=0.0):
     with open(input_file, 'r') as f:
         lines = f.readlines()
         
@@ -98,10 +98,14 @@ def transform(input_file, output_file):
     for d in customer_demands:
         out_parts.append(str(d))
         
-    # cost (dummy)
+    # cost (scaled optimal from filo)
     out_parts.append('cost')
-    out_parts.append('0.0')
-    
+    if filo_cost > 0.0:
+        normalized_opt_cost = filo_cost / scale
+        out_parts.append(str(normalized_opt_cost))
+    else:
+        out_parts.append('0.0')
+        
     # node_flag (dummy)
     out_parts.append('node_flag')
     for i in range(1, len(customers) + 1):
@@ -117,4 +121,5 @@ def transform(input_file, output_file):
 if __name__ == '__main__':
     input_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1.txt'
     output_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1_lkh.txt'
-    transform(input_f, output_f)
+    # Thay kết quả chi phí tối ưu bạn chạy được từ Filo vào biến filo_cost
+    transform(input_f, output_f, filo_cost=479705.0)
