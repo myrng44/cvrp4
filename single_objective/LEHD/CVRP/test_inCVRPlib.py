@@ -43,7 +43,9 @@ test_paras = {
     200: ['vrp200_test_lkh.txt', 128, 128, 0],
     500: ['vrp500_test_lkh.txt', 128, 128, 0],
     1000: ['vrp1000_test_lkh.txt', 128, 128, 0],
-    0: ['vrplib_192instances.txt', 192, 1, 0 ]
+    0: ['vrplib_192instances.txt', 192, 1, 0 ],
+    'ut500': ['vrplib_500to1000_instances.txt', 192, 1, 0 ],
+    '500ut1000': ['vrplib_upto500_instances.txt', 192, 1, 0 ]
 }
 
 

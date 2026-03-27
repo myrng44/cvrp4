@@ -19,7 +19,7 @@ from LEHD.CVRP.VRPTester import VRPTester as Tester
 # parameters
 
 # testing problem size
-problem_size = 'upTo500'
+problem_size = '3000to7000'
 # decode method: use RRC or not (greedy)
 Use_RRC = True
 
@@ -40,8 +40,6 @@ test_paras = {
     200: ['vrp200_test_lkh.txt', 128, 128],
     500: ['vrp500_test_lkh.txt', 128, 128],
     1000: ['vrp1000_test_lkh.txt', 128, 128],
-    'upTo500': ['vrplib_upto500_instances.txt', 1, 1],
-    '500to1000': ['vrplib_500to1000_instances.txt', 1, 1],
     '3000to7000': ['vrp3k4k6k7k_instances.txt', 1, 1]
 }
 
