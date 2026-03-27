@@ -135,8 +135,8 @@ def transform(input_file, output_file, filo_sol_file=None):
     print(f"Data transformed successfully. Length of customers: {len(customers)}")
 
 if __name__ == '__main__':
-    input_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1.txt'
-    output_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Antwerp1_lkh.txt'
-    sol_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\result\filo2\Antwerp1.txt_seed-0.vrp.sol'
+    input_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Leuven2.txt'
+    output_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\Transform_data\another_data\Leuven2_filo2.txt'
+    sol_f = r'f:\PJ\VRP\models\NCO_code\single_objective\LEHD\CVRP\result\filo2\Leuven2.txt_seed-0.vrp.sol'
     # Trích xuất dữ liệu route từ Filo .sol và ghi vào Antwerp1_lkh.txt
     transform(input_f, output_f, filo_sol_file=sol_f)
