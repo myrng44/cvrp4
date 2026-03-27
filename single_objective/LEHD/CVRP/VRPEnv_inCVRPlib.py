@@ -455,7 +455,15 @@ class VRPEnv:
             self.raw_data_cost_1 = []
             self.raw_data_node_flag_1 = []
             for line in tqdm(open( self.data_path, "r").readlines()[0:int(0.5 * episode)], ascii=True):
-                line = line.split(",")
+                line = line.strip()
+                # Remove leading '[' and trailing ']' if present
+                if line.startswith('['):
+                    line = line[1:]
+                if line.endswith(']'):
+                    line = line[:-1]
+                
+                # Split by comma and strip whitespace and quotes from each element
+                line = [item.strip().strip("'\"") for item in line.split(",")]
 
                 depot_index = int(line.index('depot'))
                 customer_index = int(line.index('customer'))
@@ -502,7 +510,16 @@ class VRPEnv:
             self.raw_data_cost_2 = []
             self.raw_data_node_flag_2 = []
             for line in tqdm(open(self.data_path, "r").readlines()[int(0.5 * episode):int(episode)], ascii=True):
-                line = line.split(",")
+                line = line.strip()
+                # Remove leading '[' and trailing ']' if present
+                if line.startswith('['):
+                    line = line[1:]
+                if line.endswith(']'):
+                    line = line[:-1]
+                
+                # Split by comma and strip whitespace and quotes from each element
+                line = [item.strip().strip("'\"") for item in line.split(",")]
+                
                 depot_index = int(line.index('depot'))
                 customer_index = int(line.index('customer'))
                 capacity_index = int(line.index('capacity'))
@@ -559,7 +576,15 @@ class VRPEnv:
                 self.raw_data_cost = []
                 self.raw_data_node_flag = []
                 for line in tqdm(open(self.data_path, "r").readlines()[0:episode], ascii=True):
-                    line = line.split(",")
+                    line = line.strip()
+                    # Remove leading '[' and trailing ']' if present
+                    if line.startswith('['):
+                        line = line[1:]
+                    if line.endswith(']'):
+                        line = line[:-1]
+                    
+                    # Split by comma and strip whitespace and quotes from each element
+                    line = [item.strip().strip("'\"") for item in line.split(",")]
 
                     depot_index = int(line.index('depot'))
                     customer_index = int(line.index('customer'))
