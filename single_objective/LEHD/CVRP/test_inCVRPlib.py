@@ -19,7 +19,7 @@ from LEHD.CVRP.Tester_inCVRPlib import VRPTester as Tester
 ##########################################################################################
 # parameters
 
-problem_size = 'ut500'    # testing problem size
+problem_size = '500ut1000'    # testing problem size
 test_in_vrplib = True  # test in vrplib or not
 Use_RRC = True       # decode method: use RRC or not (greedy)
 RRC_budget = 1000         # RRC budget
@@ -31,7 +31,7 @@ model_load_epoch = 40
 
 
 if test_in_vrplib == True:
-    problem_size = 'ut500'    
+    problem_size = '500ut1000'    
 
 if not Use_RRC:
     RRC_budget = 0
