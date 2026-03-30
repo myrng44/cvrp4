@@ -43,7 +43,7 @@ test_paras = {
     3000: ['Leuven1_3000_filo2.txt', 1, 1],
     4000: ['Leuven2_4000_filo2.txt', 1, 1],
     6000: ['Antwerp1_6000_filo2.txt', 1, 1],
-    7000: ['Antwerp2_7000_filo2', 1, 1]
+    7000: ['Antwerp2_7000_filo2.txt', 1, 1]
 }
 
 
