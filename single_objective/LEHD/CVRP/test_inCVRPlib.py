@@ -19,14 +19,14 @@ from LEHD.CVRP.Tester_inCVRPlib import VRPTester as Tester
 ##########################################################################################
 # parameters
 
-problem_size = '500ut1000'    # testing problem size
+problem_size = 'ut500'    # testing problem size
 test_in_vrplib = True  # test in vrplib or not
 Use_RRC = True       # decode method: use RRC or not (greedy)
 RRC_budget = 1000         # RRC budget
 
 ########### model ###############
 
-model_load_path = 'result/20260322_032817_train'
+model_load_path = 'result/20230817_235537_train'
 model_load_epoch = 40
 
 
@@ -44,8 +44,8 @@ test_paras = {
     500: ['vrp500_test_lkh.txt', 128, 128, 0],
     1000: ['vrp1000_test_lkh.txt', 128, 128, 0],
     0: ['vrplib_192instances.txt', 192, 1, 0 ],
-    'ut500': ['vrplib_500to1000_instances.txt', 192, 1, 0 ],
-    '500ut1000': ['vrplib_upto500_instances.txt', 192, 1, 0 ]
+    '500ut1000': ['vrplib_500to1000_instances.txt', 192, 1, 0 ],
+    'ut500': ['vrplib_upto500_instances.txt', 192, 1, 0 ]
 }
 
 

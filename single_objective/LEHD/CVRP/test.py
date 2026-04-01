@@ -19,7 +19,7 @@ from LEHD.CVRP.VRPTester import VRPTester as Tester
 # parameters
 
 # testing problem size
-problem_size = 7000
+problem_size = 3000
 # decode method: use RRC or not (greedy)
 Use_RRC = True
 
@@ -27,7 +27,7 @@ Use_RRC = True
 RRC_budget = 100 #10
 
 ########### model ###############
-model_load_path = 'result/20260322_032817_train'
+model_load_path = 'result/20230817_235537_train'
 model_load_epoch = 40
 
 if not Use_RRC:
