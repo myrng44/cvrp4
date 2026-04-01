@@ -31,7 +31,7 @@ model_load_epoch = 40
 
 
 if test_in_vrplib == True:
-    problem_size = '500ut1000'    
+    problem_size = 'ut500'    
 
 if not Use_RRC:
     RRC_budget = 0
