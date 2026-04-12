@@ -63,7 +63,7 @@ model_params = {
     'mode': mode,
     'embedding_dim': 128,
     'sqrt_embedding_dim': 128**(1/2),
-    'decoder_layer_num': 6,
+    'decoder_layer_num': 8,
     'qkv_dim': 16,
     'head_num': 8,
     'ff_hidden_dim': 512,
