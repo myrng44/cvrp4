@@ -28,7 +28,7 @@ RRC_budget = 1000 #10
 
 ########### model ###############
 model_load_path = 'result/20230817_235537_train'
-model_load_epoch = 40
+model_load_epoch = 80
 
 if not Use_RRC:
     RRC_budget = 0

@@ -88,7 +88,7 @@ class CVRP_Encoder(nn.Module):
         super().__init__()
         self.model_params = model_params
         embedding_dim = self.model_params['embedding_dim']
-        encoder_layer_num =  1
+        encoder_layer_num =  3
         self.embedding = nn.Linear(3, embedding_dim, bias=True)
         self.layers = nn.ModuleList([EncoderLayer(**model_params) for _ in range(encoder_layer_num)])
 
