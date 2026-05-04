@@ -37,7 +37,7 @@ class VRPModel(nn.Module):
             remaining_capacity = state.problems[:, 1, 3]
 
             probs = self.decoder(self.encoder(state.problems,self.capacity),
-                                 selected_node_list, self.capacity,remaining_capacity)
+                                 selected_node_list, self.capacity,remaining_capacity, state.problems)
 
             selected_node_student, selected_flag_student = probs_to_selected_nodes(probs, split_line, batch_size)
 
@@ -61,7 +61,7 @@ class VRPModel(nn.Module):
                 self.encoded_nodes = self.encoder(state.problems,self.capacity)
 
 
-            probs = self.decoder(self.encoded_nodes, selected_node_list,self.capacity, remaining_capacity)
+            probs = self.decoder(self.encoded_nodes, selected_node_list,self.capacity, remaining_capacity, state.problems)
 
             selected_node_student = probs.argmax(dim=1)  # shape: B
             is_via_depot_student = selected_node_student >= split_line  # 节点index大于 customer_num的是通过depot的
@@ -97,6 +97,10 @@ class CVRP_Encoder(nn.Module):
         data = data_.clone().detach()
         data= data[:,:,:3]
 
+        # === AAFM: compute pairwise distance from (x,y) coordinates ===
+        coords = data[:, :, :2]  # (B, n, 2)
+        dist = torch.cdist(coords, coords)  # (B, n, n)
+
         data[:,:,2] = data[:,:,2]/capacity
 
         embedded_input = self.embedding(data)
@@ -105,7 +109,7 @@ class CVRP_Encoder(nn.Module):
 
         layer_count = 0
         for layer in self.layers:
-            out = layer(out)
+            out = layer(out, dist)  # pass dist for AAFM
             layer_count += 1
         return out
 
@@ -120,18 +124,21 @@ class EncoderLayer(nn.Module):
         self.Wq = nn.Linear(embedding_dim, embedding_dim, bias=False)
         self.Wk = nn.Linear(embedding_dim, embedding_dim, bias=False)
         self.Wv = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.alpha = nn.Parameter(torch.Tensor([1.]), requires_grad=True)  # learnable scale
 
         self.feedForward = Feed_Forward_Module(**model_params)
 
 
-    def forward(self, input1):
+    def forward(self, input1, dist):
+        # input1: (B, n, embedding_dim), dist: (B, n, n)
 
         q = self.Wq(input1)
         k = self.Wk(input1)
         v = self.Wv(input1)
 
-        # === AAFM replaces MHA (no adaptation_bias in LEHD) ===
-        aafm_out = adaptation_attention_free_module(q, k, v)
+        # === AAFM with distance-based adaptation_bias ===
+        adaptation_bias = -self.alpha * dist  # (B, n, n)
+        aafm_out = adaptation_attention_free_module(q, k, v, adaptation_bias)
 
         out1 = input1 + aafm_out
         out2 = self.feedForward(out1)
@@ -202,7 +209,7 @@ class CVRP_Decoder(nn.Module):
         return picked_nodes
 
 
-    def forward(self, data,selected_node_list,capacity,remaining_capacity):
+    def forward(self, data,selected_node_list,capacity,remaining_capacity, raw_data):
 
         data_ = data[:,1:,:].clone().detach()
         selected_node_list_ = selected_node_list.clone().detach() - 1
@@ -236,11 +243,23 @@ class CVRP_Decoder(nn.Module):
         embeded_all = torch.cat((embedded_first_node_,left_encoded_node,embedded_last_node_), dim=1)
         out = embeded_all  # [B*(V-1), problem_size - current_step +2, embedding_dim]
 
+        # === AAFM: compute distance matrix for assembled sequence ===
+        # Coordinates: [depot, remaining_customers, last_node]
+        all_customer_coords = raw_data[:, 1:, :2]  # (B, problem_size, 2)
+        depot_coords = raw_data[:, [0], :2]  # (B, 1, 2)
+        left_coords = self._get_new_data(all_customer_coords, selected_node_list_, problem_size, batch_size_V)
+        if selected_node_list_.shape[1] == 0:
+            last_coords = raw_data[:, [0], :2]
+        else:
+            last_coords = self._get_encoding(all_customer_coords, selected_node_list_[:, [-1]])
+        all_coords = torch.cat([depot_coords, left_coords, last_coords], dim=1)  # (B, n, 2)
+        dist = torch.cdist(all_coords, all_coords)  # (B, n, n)
+
         layer_count = 0
 
         for layer in self.layers:
 
-            out = layer(out)
+            out = layer(out, dist)  # pass dist for AAFM
             layer_count += 1
 
 
@@ -283,16 +302,19 @@ class DecoderLayer(nn.Module):
         self.Wq = nn.Linear(embedding_dim, embedding_dim, bias=False)
         self.Wk = nn.Linear(embedding_dim, embedding_dim, bias=False)
         self.Wv = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.alpha = nn.Parameter(torch.Tensor([1.]), requires_grad=True)  # learnable scale
         self.feedForward = Feed_Forward_Module(**model_params)
 
-    def forward(self, input1):
+    def forward(self, input1, dist):
+        # input1: (B, n, embedding_dim), dist: (B, n, n)
 
         q = self.Wq(input1)
         k = self.Wk(input1)
         v = self.Wv(input1)
 
-        # === AAFM replaces MHA ===
-        aafm_out = adaptation_attention_free_module(q, k, v)
+        # === AAFM with distance-based adaptation_bias ===
+        adaptation_bias = -self.alpha * dist  # (B, n, n)
+        aafm_out = adaptation_attention_free_module(q, k, v, adaptation_bias)
 
         out1 = input1 + aafm_out
         out2 = self.feedForward(out1)
