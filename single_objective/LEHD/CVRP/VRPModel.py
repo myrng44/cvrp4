@@ -115,30 +115,25 @@ class EncoderLayer(nn.Module):
         super().__init__()
         self.model_params = model_params
         embedding_dim = self.model_params['embedding_dim']
-        head_num = self.model_params['head_num']
-        qkv_dim = self.model_params['qkv_dim']
 
-        self.Wq = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.Wk = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.Wv = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.multi_head_combine = nn.Linear(head_num * qkv_dim, embedding_dim)
+        # === AAFM: project to embedding_dim directly (no head splitting) ===
+        self.Wq = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.Wk = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.Wv = nn.Linear(embedding_dim, embedding_dim, bias=False)
 
         self.feedForward = Feed_Forward_Module(**model_params)
 
 
     def forward(self, input1):
 
-        head_num = self.model_params['head_num']
+        q = self.Wq(input1)
+        k = self.Wk(input1)
+        v = self.Wv(input1)
 
-        q = reshape_by_heads(self.Wq(input1), head_num=head_num)
-        k = reshape_by_heads(self.Wk(input1), head_num=head_num)
-        v = reshape_by_heads(self.Wv(input1), head_num=head_num)
+        # === AAFM replaces MHA (no adaptation_bias in LEHD) ===
+        aafm_out = adaptation_attention_free_module(q, k, v)
 
-        out_concat = multi_head_attention(q, k, v)  # shape: (B, n, head_num*key_dim)
-
-        multi_head_out = self.multi_head_combine(out_concat)  # shape: (B, n, embedding_dim)
-
-        out1 = input1 +   multi_head_out
+        out1 = input1 + aafm_out
         out2 = self.feedForward(out1)
 
         out3 = out1 + out2
@@ -283,67 +278,76 @@ class DecoderLayer(nn.Module):
         super().__init__()
         self.model_params = model_params
         embedding_dim = self.model_params['embedding_dim']
-        head_num = self.model_params['head_num']
-        qkv_dim = self.model_params['qkv_dim']
 
-        self.Wq = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.Wk = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.Wv = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.multi_head_combine = nn.Linear(head_num * qkv_dim, embedding_dim)
+        # === AAFM: project to embedding_dim directly (no head splitting) ===
+        self.Wq = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.Wk = nn.Linear(embedding_dim, embedding_dim, bias=False)
+        self.Wv = nn.Linear(embedding_dim, embedding_dim, bias=False)
         self.feedForward = Feed_Forward_Module(**model_params)
 
     def forward(self, input1):
 
-        head_num = self.model_params['head_num']
+        q = self.Wq(input1)
+        k = self.Wk(input1)
+        v = self.Wv(input1)
 
-        q = reshape_by_heads(self.Wq(input1), head_num=head_num)
-        k = reshape_by_heads(self.Wk(input1), head_num=head_num)
-        v = reshape_by_heads(self.Wv(input1), head_num=head_num)
+        # === AAFM replaces MHA ===
+        aafm_out = adaptation_attention_free_module(q, k, v)
 
-        out_concat = multi_head_attention(q, k, v)
-
-        multi_head_out = self.multi_head_combine(out_concat)
-
-        out1 = input1 + multi_head_out
+        out1 = input1 + aafm_out
         out2 = self.feedForward(out1)
         out3 = out1 + out2
         return out3
 
 
 
-def reshape_by_heads(qkv, head_num):
+def adaptation_attention_free_module(q, k, v, adaptation_bias=None, ninf_mask=None):
+    """
+    AAFM (Adaptive Attention Free Module) from ICAM.
+    Replaces traditional multi-head attention.
 
-    batch_s = qkv.size(0)
+    Args:
+        q: query, shape: (batch, n, embedding_dim)
+        k: key,   shape: (batch, m, embedding_dim)
+        v: value, shape: (batch, m, embedding_dim)
+        adaptation_bias: optional, shape: (batch, n, m). Default None (no bias).
+        ninf_mask: optional, shape: (batch, n, m)
 
-    n = qkv.size(1)
+    Returns:
+        out: shape: (batch, n, embedding_dim)
+    """
+    sigmoid_q = torch.sigmoid(q)
+    # shape: (batch, n, embedding_dim)
 
-    q_reshaped = qkv.reshape(batch_s, n, head_num, -1)
+    exp_k = torch.exp(k)
+    # shape: (batch, m, embedding_dim)
 
-    q_transposed = q_reshaped.transpose(1, 2)
+    if adaptation_bias is not None or ninf_mask is not None:
+        bias_term = torch.zeros(q.size(0), q.size(1), k.size(1), device=q.device, dtype=q.dtype)
+        if adaptation_bias is not None:
+            bias_term = bias_term + adaptation_bias
+        if ninf_mask is not None:
+            bias_term = bias_term + ninf_mask
+        exp_bias = torch.exp(bias_term)
+        # shape: (batch, n, m)
+        numerator = exp_bias @ torch.mul(exp_k, v)
+        denominator = exp_bias @ exp_k
+    else:
+        # No bias: simplifies to AFT-simple
+        numerator = torch.mul(exp_k, v).sum(dim=1, keepdim=True).expand_as(q)
+        denominator = exp_k.sum(dim=1, keepdim=True).expand_as(q)
 
-    return q_transposed
+    weighted = numerator / denominator
+    if torch.isinf(numerator).any() or torch.isinf(denominator).any():
+        weighted = torch.nan_to_num_(numerator) / torch.nan_to_num_(denominator)
+    if torch.isnan(weighted).any():
+        torch.nan_to_num_(weighted)
+    # shape: (batch, n, embedding_dim)
 
+    out = torch.mul(sigmoid_q, weighted)
+    # shape: (batch, n, embedding_dim)
 
-def multi_head_attention(q, k, v):
-
-    batch_s = q.size(0)
-    head_num = q.size(1)
-    n = q.size(2)
-    key_dim = q.size(3)
-
-    score = torch.matmul(q, k.transpose(2, 3))  # shape: (B, head_num, n, n)
-
-    score_scaled = score / torch.sqrt(torch.tensor(key_dim, dtype=torch.float))
-
-    weights = nn.Softmax(dim=3)(score_scaled)  # shape: (B, head_num, n, n)
-
-    out = torch.matmul(weights, v)  # shape: (B, head_num, n, key_dim)
-
-    out_transposed = out.transpose(1, 2)  # shape: (B, n, head_num, key_dim)
-
-    out_concat = out_transposed.reshape(batch_s, n, head_num * key_dim)  # shape: (B, n, head_num*key_dim)
-
-    return out_concat
+    return out
 
 
 class Feed_Forward_Module(nn.Module):
